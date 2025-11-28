@@ -1,0 +1,8 @@
+name = "multiplier-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-28"
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: Add workers_dev = false if you only want to use routes
+# workers_dev = false
+

@@ -2,7 +2,14 @@
 
 This Cloudflare Worker is designed to serve content from an external origin host (`multiplier-origin.captivateiq.com`) under a specific subdirectory path on the main domain (`captivateiq.com/multiplier`).
 
-Features
+## Project Structure
+
+- **Worker Code:** [`src/index.js`](src/index.js) - The main worker logic
+- **Configuration:** [`wrangler.toml`](wrangler.toml) - Cloudflare Worker settings
+- **Tests:** [`test/index.test.js`](test/index.test.js) - Comprehensive test suite (33 tests)
+- **Test Summary:** [`test/TEST_SUMMARY.md`](test/TEST_SUMMARY.md) - Human-readable explanation of what's tested
+
+## Features
 ---------------
 
 - **Subdirectory Proxy:** Maps `captivateiq.com/multiplier/...` requests to the origin's root path (`/...`).
@@ -21,16 +28,28 @@ The worker relies on three main constants for configuration:
 | `LEGACY_HOST` | Any previous hostnames that may appear in hardcoded links that need to be rewritten. | `multiplier.captivateiq.com` |
 | `CANONICAL_BASE` | The public, full URL base path where the content will be hosted. | `https://captivateiq.com/multiplier` |
 
-Deployment Notes
+## Testing
+
+Run the comprehensive test suite:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+```
+
+See [`test/TEST_SUMMARY.md`](test/TEST_SUMMARY.md) for detailed information about what's tested.
+
+## Deployment Notes
 ----------------
 
 ### 1. Project Setup
 
-This project requires the Cloudflare Workers CLI, `wrangler`.
+Install dependencies:
 ```bash
-# Example: Initialize wrangler
-npm install -g wrangler
-wrangler init my-proxy-worker
+npm install
 ```
 
 ### 2. Route Configuration (Critical)
