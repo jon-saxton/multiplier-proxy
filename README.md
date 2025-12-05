@@ -15,7 +15,7 @@ This Cloudflare Worker is designed to serve content from an external origin host
 - **Subdirectory Proxy:** Maps `captivateiq.com/multiplier/...` requests to the origin's root path (`/...`).
 - **Redirect Fixing:** Automatically rewrites absolute and relative HTTP `Location` headers (301/302 redirects) to ensure users stay within the `/multiplier` subdirectory.
 - **Link Rewriting (HTMLRewriter):** Scans and fixes all links (`href`, `src`, `action`) within HTML content to prevent users from accidentally navigating to the hidden origin domain.
-- **SEO Compliance:** Rewrites `sitemap.xml` and `robots.txt` to use the canonical production URLs.
+- **SEO Compliance:** Rewrites `robots.txt` to use the canonical production URLs. `sitemap.xml` rewrite is temporarily disabled post-launch; see note below.
 
 ⚙️ Configuration
 ----------------
@@ -44,6 +44,10 @@ See [`test/TEST_SUMMARY.md`](test/TEST_SUMMARY.md) for detailed information abou
 
 ## Deployment Notes
 ----------------
+
+### Post-launch follow-up
+
+A week or two post-launch, update the worker to re-enable the sitemap rewrite so search engines have time to process the redirects naturally before we rewrite `sitemap.xml`.
 
 ### 1. Project Setup
 

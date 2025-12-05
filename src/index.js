@@ -34,7 +34,9 @@ export default {
     const contentType = originResponse.headers.get("content-type");
     const isHtml = contentType && contentType.includes("text/html");
 
-    if (upstreamUrl.pathname === "/sitemap.xml") return rewriteSitemap(originResponse);
+    // Temporarily disable sitemap rewrite to let redirects settle post-launch
+    // (see README for timing).
+    // if (upstreamUrl.pathname === "/sitemap.xml") return rewriteSitemap(originResponse);
     if (upstreamUrl.pathname === "/robots.txt") return rewriteRobots(originResponse);
 
     if (isHtml) {
