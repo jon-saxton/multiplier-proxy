@@ -3,14 +3,14 @@ import { env, SELF } from "cloudflare:test";
 import worker from "../src/index.js";
 
 // Constants from worker.js
-const ORIGIN_HOST = "multiplier-origin.captivateiq.com";
-const LEGACY_HOST = "multiplier.captivateiq.com";
-const CANONICAL_BASE = "https://captivateiq.com/multiplier";
+const ORIGIN_HOST = "proxy-origin.captivateiq.com";
+const LEGACY_HOST = "proxy.captivateiq.com";
+const CANONICAL_BASE = "https://captivateiq.com/proxy";
 
-describe("Multiplier Proxy Worker", () => {
+describe("Proxy Proxy Worker", () => {
   describe("Path Matching and Routing", () => {
-    it("should proxy valid /multiplier/* paths", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/pricing");
+    it("should proxy valid /proxy/* paths", async () => {
+      const request = new Request("https://captivateiq.com/proxy/pricing");
       
       // Mock the upstream fetch
       const mockFetch = vi.fn(async (req) => {
@@ -30,8 +30,8 @@ describe("Multiplier Proxy Worker", () => {
       expect(response.status).toBe(200);
     });
 
-    it("should proxy /multiplier exactly (root)", async () => {
-      const request = new Request("https://captivateiq.com/multiplier");
+    it("should proxy /proxy exactly (root)", async () => {
+      const request = new Request("https://captivateiq.com/proxy");
       
       const mockFetch = vi.fn(async (req) => {
         const url = new URL(req.url);
@@ -50,8 +50,8 @@ describe("Multiplier Proxy Worker", () => {
       expect(response.status).toBe(200);
     });
 
-    it("should NOT proxy /multiplierX (invalid path)", async () => {
-      const request = new Request("https://captivateiq.com/multiplierX");
+    it("should NOT proxy /proxyX (invalid path)", async () => {
+      const request = new Request("https://captivateiq.com/proxyX");
       
       const mockFetch = vi.fn(async (req) => {
         // Should pass through the original request
@@ -67,8 +67,8 @@ describe("Multiplier Proxy Worker", () => {
       expect(text).toBe("Passed through");
     });
 
-    it("should NOT proxy /multiplier-test (invalid path)", async () => {
-      const request = new Request("https://captivateiq.com/multiplier-test");
+    it("should NOT proxy /proxy-test (invalid path)", async () => {
+      const request = new Request("https://captivateiq.com/proxy-test");
       
       const mockFetch = vi.fn(async (req) => {
         return new Response("Passed through", { status: 200 });
@@ -81,8 +81,8 @@ describe("Multiplier Proxy Worker", () => {
       expect(mockFetch).toHaveBeenCalledWith(request);
     });
 
-    it("should handle /multiplier/ with trailing slash", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/");
+    it("should handle /proxy/ with trailing slash", async () => {
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async (req) => {
         const url = new URL(req.url);
@@ -101,7 +101,7 @@ describe("Multiplier Proxy Worker", () => {
     });
 
     it("should preserve query parameters", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/search?q=test&filter=active");
+      const request = new Request("https://captivateiq.com/proxy/search?q=test&filter=active");
       
       const mockFetch = vi.fn(async (req) => {
         const url = new URL(req.url);
@@ -124,12 +124,12 @@ describe("Multiplier Proxy Worker", () => {
       const htmlContent = `
         <html>
           <body>
-            <a href="https://multiplier-origin.captivateiq.com/about">About</a>
+            <a href="https://proxy-origin.captivateiq.com/about">About</a>
           </body>
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -142,7 +142,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="https://captivateiq.com/multiplier/about"');
+      expect(text).toContain('href="https://captivateiq.com/proxy/about"');
       expect(text).not.toContain(ORIGIN_HOST);
     });
 
@@ -150,12 +150,12 @@ describe("Multiplier Proxy Worker", () => {
       const htmlContent = `
         <html>
           <body>
-            <a href="https://multiplier.captivateiq.com/pricing">Pricing</a>
+            <a href="https://proxy.captivateiq.com/pricing">Pricing</a>
           </body>
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -168,7 +168,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="https://captivateiq.com/multiplier/pricing"');
+      expect(text).toContain('href="https://captivateiq.com/proxy/pricing"');
       expect(text).not.toContain(LEGACY_HOST);
     });
 
@@ -181,7 +181,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -194,19 +194,19 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="/multiplier/contact"');
+      expect(text).toContain('href="/proxy/contact"');
     });
 
     it("should NOT double-prefix already prefixed URLs", async () => {
       const htmlContent = `
         <html>
           <body>
-            <a href="/multiplier/about">About</a>
+            <a href="/proxy/about">About</a>
           </body>
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -219,8 +219,8 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="/multiplier/about"');
-      expect(text).not.toContain('/multiplier/multiplier/about');
+      expect(text).toContain('href="/proxy/about"');
+      expect(text).not.toContain('/proxy/proxy/about');
     });
 
     it("should rewrite image src attributes", async () => {
@@ -232,7 +232,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -245,7 +245,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('src="/multiplier/images/logo.png"');
+      expect(text).toContain('src="/proxy/images/logo.png"');
     });
 
     it("should rewrite script src attributes", async () => {
@@ -257,7 +257,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -270,7 +270,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('src="/multiplier/js/main.js"');
+      expect(text).toContain('src="/proxy/js/main.js"');
     });
 
     it("should rewrite form action attributes", async () => {
@@ -284,7 +284,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -297,7 +297,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('action="/multiplier/submit"');
+      expect(text).toContain('action="/proxy/submit"');
     });
 
     it("should rewrite link href for stylesheets", async () => {
@@ -309,7 +309,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -322,7 +322,7 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="/multiplier/css/styles.css"');
+      expect(text).toContain('href="/proxy/css/styles.css"');
     });
 
     it("should NOT rewrite protocol-relative URLs", async () => {
@@ -334,7 +334,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -348,7 +348,7 @@ describe("Multiplier Proxy Worker", () => {
       const text = await response.text();
       
       expect(text).toContain('src="//cdn.example.com/image.png"');
-      expect(text).not.toContain('/multiplier//cdn.example.com');
+      expect(text).not.toContain('/proxy//cdn.example.com');
     });
 
     it("should NOT rewrite external absolute URLs", async () => {
@@ -360,7 +360,7 @@ describe("Multiplier Proxy Worker", () => {
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -379,7 +379,7 @@ describe("Multiplier Proxy Worker", () => {
 
   describe("Redirect Header Rewriting", () => {
     it("should rewrite relative Location headers", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/old-page");
+      const request = new Request("https://captivateiq.com/proxy/old-page");
       
       const mockFetch = vi.fn(async () => {
         return new Response(null, {
@@ -393,11 +393,11 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       
       expect(response.status).toBe(302);
-      expect(response.headers.get("Location")).toBe("/multiplier/new-page");
+      expect(response.headers.get("Location")).toBe("/proxy/new-page");
     });
 
     it("should rewrite absolute Location headers from origin host", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/redirect-test");
+      const request = new Request("https://captivateiq.com/proxy/redirect-test");
       
       const mockFetch = vi.fn(async () => {
         return new Response(null, {
@@ -411,11 +411,11 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       
       expect(response.status).toBe(301);
-      expect(response.headers.get("Location")).toBe("https://captivateiq.com/multiplier/destination");
+      expect(response.headers.get("Location")).toBe("https://captivateiq.com/proxy/destination");
     });
 
     it("should preserve query params in redirect Location headers", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/old");
+      const request = new Request("https://captivateiq.com/proxy/old");
       
       const mockFetch = vi.fn(async () => {
         return new Response(null, {
@@ -428,11 +428,11 @@ describe("Multiplier Proxy Worker", () => {
       
       const response = await worker.fetch(request, env, {});
       
-      expect(response.headers.get("Location")).toBe("https://captivateiq.com/multiplier/new?foo=bar&baz=qux");
+      expect(response.headers.get("Location")).toBe("https://captivateiq.com/proxy/new?foo=bar&baz=qux");
     });
 
     it("should preserve hash in redirect Location headers", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/old");
+      const request = new Request("https://captivateiq.com/proxy/old");
       
       const mockFetch = vi.fn(async () => {
         return new Response(null, {
@@ -445,11 +445,11 @@ describe("Multiplier Proxy Worker", () => {
       
       const response = await worker.fetch(request, env, {});
       
-      expect(response.headers.get("Location")).toBe("https://captivateiq.com/multiplier/new#section");
+      expect(response.headers.get("Location")).toBe("https://captivateiq.com/proxy/new#section");
     });
 
     it("should NOT rewrite external redirects", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/external");
+      const request = new Request("https://captivateiq.com/proxy/external");
       
       const mockFetch = vi.fn(async () => {
         return new Response(null, {
@@ -466,7 +466,7 @@ describe("Multiplier Proxy Worker", () => {
     });
 
     it("should handle responses without Location header", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/no-redirect");
+      const request = new Request("https://captivateiq.com/proxy/no-redirect");
       
       const mockFetch = vi.fn(async () => {
         return new Response("OK", {
@@ -489,14 +489,14 @@ describe("Multiplier Proxy Worker", () => {
       const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://multiplier-origin.captivateiq.com/</loc>
+    <loc>https://proxy-origin.captivateiq.com/</loc>
   </url>
   <url>
-    <loc>https://multiplier-origin.captivateiq.com/pricing</loc>
+    <loc>https://proxy-origin.captivateiq.com/pricing</loc>
   </url>
 </urlset>`;
       
-      const request = new Request("https://captivateiq.com/multiplier/sitemap.xml");
+      const request = new Request("https://captivateiq.com/proxy/sitemap.xml");
       
       const mockFetch = vi.fn(async () => {
         return new Response(sitemapContent, {
@@ -509,8 +509,8 @@ describe("Multiplier Proxy Worker", () => {
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain("https://captivateiq.com/multiplier/");
-      expect(text).toContain("https://captivateiq.com/multiplier/pricing");
+      expect(text).toContain("https://captivateiq.com/proxy/");
+      expect(text).toContain("https://captivateiq.com/proxy/pricing");
       expect(text).not.toContain(ORIGIN_HOST);
     });
 
@@ -518,9 +518,9 @@ describe("Multiplier Proxy Worker", () => {
       const robotsContent = `User-agent: *
 Allow: /
 
-Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
+Sitemap: https://proxy-origin.captivateiq.com/sitemap.xml`;
       
-      const request = new Request("https://captivateiq.com/multiplier/robots.txt");
+      const request = new Request("https://captivateiq.com/proxy/robots.txt");
       
       const mockFetch = vi.fn(async () => {
         return new Response(robotsContent, {
@@ -533,7 +533,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain("https://captivateiq.com/multiplier/sitemap.xml");
+      expect(text).toContain("https://captivateiq.com/proxy/sitemap.xml");
       expect(text).not.toContain(ORIGIN_HOST);
     });
 
@@ -541,11 +541,11 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
       const sitemapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://multiplier-origin.captivateiq.com/</loc>
+    <loc>https://proxy-origin.captivateiq.com/</loc>
   </url>
 </urlset>`;
       
-      const request = new Request("https://captivateiq.com/multiplier/sitemap.xml");
+      const request = new Request("https://captivateiq.com/proxy/sitemap.xml");
       
       const mockFetch = vi.fn(async () => {
         return new Response(sitemapContent, {
@@ -569,7 +569,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     it("should pass through non-HTML content without rewriting", async () => {
       const jsonContent = JSON.stringify({ url: "/api/endpoint" });
       
-      const request = new Request("https://captivateiq.com/multiplier/api/data");
+      const request = new Request("https://captivateiq.com/proxy/api/data");
       
       const mockFetch = vi.fn(async () => {
         return new Response(jsonContent, {
@@ -589,7 +589,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     it("should pass through image content", async () => {
       const imageData = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0]); // JPEG header
       
-      const request = new Request("https://captivateiq.com/multiplier/image.jpg");
+      const request = new Request("https://captivateiq.com/proxy/image.jpg");
       
       const mockFetch = vi.fn(async () => {
         return new Response(imageData, {
@@ -605,7 +605,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     });
 
     it("should handle empty HTML gracefully", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/empty");
+      const request = new Request("https://captivateiq.com/proxy/empty");
       
       const mockFetch = vi.fn(async () => {
         return new Response("<html></html>", {
@@ -622,7 +622,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     });
 
     it("should set Host header correctly on upstream request", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/test");
+      const request = new Request("https://captivateiq.com/proxy/test");
       
       const mockFetch = vi.fn(async (req) => {
         expect(req.headers.get("Host")).toBe(ORIGIN_HOST);
@@ -639,7 +639,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     });
 
     it("should remove Accept-Encoding header from upstream request", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/test", {
+      const request = new Request("https://captivateiq.com/proxy/test", {
         headers: { "Accept-Encoding": "gzip, deflate, br" }
       });
       
@@ -658,7 +658,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
     });
 
     it("should handle deep nested paths", async () => {
-      const request = new Request("https://captivateiq.com/multiplier/a/b/c/d/e/page");
+      const request = new Request("https://captivateiq.com/proxy/a/b/c/d/e/page");
       
       const mockFetch = vi.fn(async (req) => {
         const url = new URL(req.url);
@@ -684,7 +684,7 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -704,13 +704,13 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
       const htmlContent = `
         <html>
           <body>
-            <a href="https://multiplier-origin.captivateiq.com/page1">Origin Link</a>
-            <a href="https://multiplier.captivateiq.com/page2">Legacy Link</a>
+            <a href="https://proxy-origin.captivateiq.com/page1">Origin Link</a>
+            <a href="https://proxy.captivateiq.com/page2">Legacy Link</a>
           </body>
         </html>
       `;
       
-      const request = new Request("https://captivateiq.com/multiplier/");
+      const request = new Request("https://captivateiq.com/proxy/");
       
       const mockFetch = vi.fn(async () => {
         return new Response(htmlContent, {
@@ -723,8 +723,8 @@ Sitemap: https://multiplier-origin.captivateiq.com/sitemap.xml`;
       const response = await worker.fetch(request, env, {});
       const text = await response.text();
       
-      expect(text).toContain('href="https://captivateiq.com/multiplier/page1"');
-      expect(text).toContain('href="https://captivateiq.com/multiplier/page2"');
+      expect(text).toContain('href="https://captivateiq.com/proxy/page1"');
+      expect(text).toContain('href="https://captivateiq.com/proxy/page2"');
       expect(text).not.toContain(ORIGIN_HOST);
       expect(text).not.toContain(LEGACY_HOST);
     });

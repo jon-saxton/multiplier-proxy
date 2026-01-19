@@ -1,14 +1,14 @@
-// Cloudflare Worker: Multiplier proxy under /multiplier
-// Route: captivateiq.com/multiplier*
+// Cloudflare Worker: Proxy proxy under /proxy
+// Route: captivateiq.com/proxy*
 
-const ORIGIN_HOST = "multiplier-origin.captivateiq.com";
-const LEGACY_HOST = "multiplier.captivateiq.com";
-const CANONICAL_BASE = "https://captivateiq.com/multiplier";
+const ORIGIN_HOST = "proxy-origin.captivateiq.com";
+const LEGACY_HOST = "proxy.captivateiq.com";
+const CANONICAL_BASE = "https://captivateiq.com/proxy";
 
 export default {
   async fetch(request, env, ctx) {
     const incomingUrl = new URL(request.url);
-    const basePath = "/multiplier";
+    const basePath = "/proxy";
 
     // Strict path matching to ensure we only proxy intended traffic
     if (!incomingUrl.pathname.startsWith(basePath) || 
@@ -78,10 +78,10 @@ class AttributeRewriter {
       }
     }
 
-    // Handle root-relative URLs (e.g. /pricing -> /multiplier/pricing)
+    // Handle root-relative URLs (e.g. /pricing -> /proxy/pricing)
     if (attribute.startsWith("/") && !attribute.startsWith("//")) {
-      if (!attribute.startsWith("/multiplier")) {
-        element.setAttribute(this.attributeName, `/multiplier${attribute}`);
+      if (!attribute.startsWith("/proxy")) {
+        element.setAttribute(this.attributeName, `/proxy${attribute}`);
       }
     }
   }
@@ -99,7 +99,7 @@ function rewriteLocationHeader(originResponse) {
 
   // Handle relative redirects (e.g. "Location: /login")
   if (location.startsWith("/") && !location.startsWith("//")) {
-    newLocation = `/multiplier${location}`;
+    newLocation = `/proxy${location}`;
     shouldRewrite = true;
   } 
   // Handle absolute redirects

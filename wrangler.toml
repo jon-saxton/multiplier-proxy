@@ -1,4 +1,4 @@
-name = "multiplier-proxy"
+name = "proxy-proxy"
 main = "src/index.js"
 compatibility_date = "2024-11-28"
 compatibility_flags = ["nodejs_compat"]
