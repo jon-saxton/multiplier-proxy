@@ -17,6 +17,7 @@ export default {
     }
 
     const upstreamUrl = new URL(incomingUrl.toString());
+    upstreamUrl.protocol = 'https:';
     upstreamUrl.hostname = ORIGIN_HOST;
     
     let newPath = incomingUrl.pathname.slice(basePath.length);
