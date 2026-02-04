@@ -3,7 +3,7 @@
 
 const ORIGIN_HOST = "multiplier-origin.captivateiq.com";
 const LEGACY_HOST = "multiplier.captivateiq.com";
-const CANONICAL_BASE = "https://captivateiq.com/multiplier";
+const CANONICAL_BASE = "https://www.captivateiq.com/multiplier";
 
 export default {
   async fetch(request, env, ctx) {
