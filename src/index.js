@@ -8,23 +8,16 @@ const CANONICAL_BASE = "https://www.captivateiq.com/multiplier";
 export default {
   async fetch(request, env, ctx) {
     const incomingUrl = new URL(request.url);
-    const basePath = "/multiplier";
 
-    console.log('Incoming request:', incomingUrl.pathname);
+    console.log('Incoming request URL:', incomingUrl.toString());
+    console.log('Pathname:', incomingUrl.pathname);
+    console.log('Hostname:', incomingUrl.hostname);
 
-    // Strict path matching to ensure we only proxy intended traffic
-    if (!incomingUrl.pathname.startsWith(basePath) || 
-       (incomingUrl.pathname.length > basePath.length && incomingUrl.pathname[basePath.length] !== '/')) {
-      console.log('Path does not match, passing through');
-      return fetch(request);
-    }
-
+    // The Cloudflare route already matches /multiplier*, so we proxy all traffic
     const upstreamUrl = new URL(incomingUrl.toString());
     upstreamUrl.protocol = 'https:';
     upstreamUrl.hostname = ORIGIN_HOST;
-    
-    let newPath = incomingUrl.pathname.slice(basePath.length);
-    upstreamUrl.pathname = newPath || "/";
+    upstreamUrl.pathname = incomingUrl.pathname;
 
     console.log('Proxying to:', upstreamUrl.toString());
 
