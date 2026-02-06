@@ -23,10 +23,17 @@ export default {
     let newPath = incomingUrl.pathname.slice(basePath.length);
     upstreamUrl.pathname = newPath || "/";
 
-    const upstreamRequest = new Request(upstreamUrl.toString(), request);
-    upstreamRequest.headers.set("Host", ORIGIN_HOST);
+    const newHeaders = new Headers(request.headers);
+    newHeaders.set("Host", ORIGIN_HOST);
     // Remove Accept-Encoding so we can inspect/rewrite the HTML body
-    upstreamRequest.headers.delete("Accept-Encoding");
+    newHeaders.delete("Accept-Encoding");
+
+    const upstreamRequest = new Request(upstreamUrl.toString(), {
+      method: request.method,
+      headers: newHeaders,
+      body: request.body,
+      redirect: 'manual'
+    });
 
     let originResponse = await fetch(upstreamRequest);
 
