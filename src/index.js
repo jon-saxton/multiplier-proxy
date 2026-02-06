@@ -13,11 +13,15 @@ export default {
     console.log('Pathname:', incomingUrl.pathname);
     console.log('Hostname:', incomingUrl.hostname);
 
-    // The Cloudflare route already matches /multiplier*, so we proxy all traffic
+    const basePath = "/multiplier";
+    
+    // Strip /multiplier prefix before proxying to origin
     const upstreamUrl = new URL(incomingUrl.toString());
     upstreamUrl.protocol = 'https:';
     upstreamUrl.hostname = ORIGIN_HOST;
-    upstreamUrl.pathname = incomingUrl.pathname;
+    
+    let newPath = incomingUrl.pathname.slice(basePath.length);
+    upstreamUrl.pathname = newPath || "/";
 
     console.log('Proxying to:', upstreamUrl.toString());
 
