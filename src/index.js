@@ -10,9 +10,12 @@ export default {
     const incomingUrl = new URL(request.url);
     const basePath = "/multiplier";
 
+    console.log('Incoming request:', incomingUrl.pathname);
+
     // Strict path matching to ensure we only proxy intended traffic
     if (!incomingUrl.pathname.startsWith(basePath) || 
        (incomingUrl.pathname.length > basePath.length && incomingUrl.pathname[basePath.length] !== '/')) {
+      console.log('Path does not match, passing through');
       return fetch(request);
     }
 
@@ -22,6 +25,8 @@ export default {
     
     let newPath = incomingUrl.pathname.slice(basePath.length);
     upstreamUrl.pathname = newPath || "/";
+
+    console.log('Proxying to:', upstreamUrl.toString());
 
     const newHeaders = new Headers(request.headers);
     newHeaders.set("Host", ORIGIN_HOST);
@@ -37,9 +42,12 @@ export default {
 
     let originResponse = await fetch(upstreamRequest);
 
+    console.log('Origin response status:', originResponse.status);
+
     originResponse = rewriteLocationHeader(originResponse);
 
     const contentType = originResponse.headers.get("content-type");
+    console.log('Content-Type:', contentType);
     const isHtml = contentType && contentType.includes("text/html");
 
     // Temporarily disable sitemap rewrite to let redirects settle post-launch
@@ -102,6 +110,8 @@ function rewriteLocationHeader(originResponse) {
   const location = originResponse.headers.get("Location");
   if (!location) return originResponse;
 
+  console.log('Rewriting Location header:', location);
+
   let newLocation = location;
   let shouldRewrite = false;
 
@@ -127,6 +137,7 @@ function rewriteLocationHeader(originResponse) {
   }
 
   if (shouldRewrite && newLocation !== location) {
+    console.log('New Location header:', newLocation);
     const headers = new Headers(originResponse.headers);
     headers.set("Location", newLocation);
 
